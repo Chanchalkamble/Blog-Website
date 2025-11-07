@@ -10,36 +10,40 @@ import userRoutes from './src/routes/user.route.js';
 import authRoutes from './src/routes/auth.route.js';
 import postRoutes from './src/routes/post.route.js';
 import commentRoutes from './src/routes/comment.route.js';
-import uploadRoutes from './src/routes/upload.route.js'; // ✅ Cloudinary upload route
+import uploadRoutes from './src/routes/upload.route.js'; // Cloudinary upload route
 
-// ✅ Load environment variables
+// Load environment variables
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
 const app = express();
 
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
+
 // ✅ CORS Configuration
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? [
+        'https://blog-website-tlwo.onrender.com', // your deployed frontend
+        'https://blog.100jsprojects.com',
+        'https://mern-blog-client-steel.vercel.app',
+        /\.vercel\.app$/,
+      ]
+    : ['http://localhost:5173', 'http://localhost:3000'];
+
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? [
-            'https://blog.100jsprojects.com',
-            'https://mern-blog-client-steel.vercel.app',
-            /\.vercel\.app$/,
-          ]
-        : ['http://localhost:5173', 'http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
   })
 );
 
-app.use(express.json());
-app.use(cookieParser());
-
-// ✅ MongoDB Connection
+// MongoDB Connection
 let isConnected = false;
 const connectDB = async () => {
   if (isConnected) return;
@@ -57,7 +61,12 @@ const connectDB = async () => {
   }
 };
 
-// ✅ Middleware to ensure DB connection before route access
+// Optional: connect immediately on startup
+connectDB().catch((err) => {
+  console.error('MongoDB connection failed on startup:', err.message);
+});
+
+// Middleware to ensure DB connection before routes
 const connectMiddleware = async (req, res, next) => {
   try {
     await connectDB();
@@ -67,7 +76,7 @@ const connectMiddleware = async (req, res, next) => {
   }
 };
 
-// ✅ Test Endpoints
+// Test endpoints
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!', timestamp: new Date() });
 });
@@ -86,34 +95,32 @@ app.get('/api/debug', (req, res) => {
   });
 });
 
-// ✅ Routes
+// Routes
 app.use('/api/user', connectMiddleware, userRoutes);
 app.use('/api/auth', connectMiddleware, authRoutes);
 app.use('/api/post', connectMiddleware, postRoutes);
 app.use('/api/comment', connectMiddleware, commentRoutes);
-app.use('/api/upload', uploadRoutes); // ✅ Cloudinary upload (no DB)
+app.use('/api/upload', uploadRoutes); // Cloudinary upload (no DB needed)
 
-// ✅ Serve Frontend (React build)
+// Serve frontend
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Serve the frontend build folder
 const frontendPath = path.join(__dirname, '../client/dist');
 app.use(express.static(frontendPath));
 
-// For any non-API route, serve the React index.html
+// Serve React index.html for non-API routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// ✅ Error Handling Middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
   res.status(statusCode).json({ success: false, message, statusCode });
 });
 
-// ✅ Start Server (for Render + local)
+// Start server
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.VERCEL) {
@@ -122,5 +129,5 @@ if (!process.env.VERCEL) {
   });
 }
 
-// ✅ Export for Vercel (it needs this)
+// Export for serverless platforms (Vercel)
 export default app;
