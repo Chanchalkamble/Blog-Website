@@ -16,6 +16,7 @@ import Search from './pages/Search';
 import Jobs from './pages/job.jsx';
 import CareerTips from './pages/CareerTips.jsx';
 import Resources from './pages/Resources.jsx';
+import Blog from './pages/Blog.jsx';
 
 export default function App() {
   return (
@@ -40,6 +41,8 @@ export default function App() {
         </Route>
 
         <Route path='/resources' element={<Resources />} />
+        <Route path='/blog' element={<Blog />} />
+
         <Route path='/post/:postSlug' element={<PostPage />} />
       </Routes>
       <Footer />
