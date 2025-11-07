@@ -19,17 +19,13 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 
-// ✅ CORS Configuration
+// ✅ CORS Configuration (updated for Render)
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? [
-            'https://blog.100jsprojects.com',
-            'https://mern-blog-client-steel.vercel.app',
-            /\.vercel\.app$/,
-          ]
-        : ['http://localhost:5173', 'http://localhost:3000'],
+    origin: [
+      'https://blog-website-tlwo.onrender.com', // your frontend (Render)
+      'http://localhost:5173',                  // for local dev
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
@@ -63,7 +59,9 @@ const connectMiddleware = async (req, res, next) => {
     await connectDB();
     next();
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Database connection failed' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Database connection failed' });
   }
 };
 
@@ -96,12 +94,11 @@ app.use('/api/upload', uploadRoutes); // ✅ Cloudinary upload (no DB)
 // ✅ Serve Frontend (React build)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Serve the frontend build folder
 const frontendPath = path.join(__dirname, '../client/dist');
+
 app.use(express.static(frontendPath));
 
-// For any non-API route, serve the React index.html
+// ✅ Fallback to React index.html for all non-API routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
@@ -113,7 +110,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ success: false, message, statusCode });
 });
 
-// ✅ Start Server (for Render + local)
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.VERCEL) {
@@ -122,5 +119,4 @@ if (!process.env.VERCEL) {
   });
 }
 
-// ✅ Export for Vercel (it needs this)
 export default app;
