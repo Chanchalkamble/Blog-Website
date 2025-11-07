@@ -15,7 +15,7 @@ export default function OAuth() {
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleGoogleClick = async () => {
-    if (loading) return; // prevent multiple popups
+    if (loading) return;
     setLoading(true);
     setErrorMessage(null);
 
@@ -23,13 +23,14 @@ export default function OAuth() {
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      // Firebase Google Sign-In popup
+      // 1️⃣ Firebase Google Sign-In
       const resultsFromGoogle = await signInWithPopup(auth, provider);
 
-      // Send user info to backend
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/google`, {
+      // 2️⃣ Send user info to backend
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      const res = await fetch(`${backendUrl}/api/auth/google`, {
         method: 'POST',
-        credentials: 'include', // for cookies if backend sets JWT
+        credentials: 'include', // include cookies
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: resultsFromGoogle.user.displayName,
@@ -46,11 +47,11 @@ export default function OAuth() {
         return;
       }
 
-      // Redux update and redirect
+      // 3️⃣ Redux update & redirect
       dispatch(signInSuccess(data));
       navigate('/');
     } catch (error) {
-      console.log('Google Sign-In Error:', error);
+      console.error('Google Sign-In Error:', error);
       setErrorMessage(error.message || 'Google Sign-In failed');
     } finally {
       setLoading(false);
