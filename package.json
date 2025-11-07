@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "nodemon api/index.js",
     "start": "node api/index.js",
-    
     "build": "npm install && npm install --prefix client && npm run build --prefix client"
   },
   "keywords": [],
@@ -15,18 +14,20 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.2",
-    "nodemon": "^3.0.2",
-    "cors": "^2.8.5", 
-    "cloudinary": "^1.41.3",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
-     "path": "^0.12.7",
-      "vite": "^5.4.21"
-    
+    "nodemon": "^3.0.2",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react-swc": "^4.2.1",
+    "vite": "^7.2.2"
   }
 }
