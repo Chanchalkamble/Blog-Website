@@ -27,7 +27,7 @@ app.use(cookieParser());
 const allowedOrigins =
   process.env.NODE_ENV === 'production'
     ? [
-        'https://blog-website-tlwo.onrender.com', // your deployed frontend
+        'https://blog-website-u60z.onrender.com', // your deployed frontend
         'https://blog.100jsprojects.com',
         'https://mern-blog-client-steel.vercel.app',
         /\.vercel\.app$/,
