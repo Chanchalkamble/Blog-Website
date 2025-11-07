@@ -30,6 +30,7 @@ export default function App() {
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/search' element={<Search />} />
           <Route path="/jobs" element={<Jobs />} />  {/* ✅ Add this line */}
+          
           <Route path="/career-tips" element={<CareerTips />} />
 
         <Route element={<PrivateRoute />}>

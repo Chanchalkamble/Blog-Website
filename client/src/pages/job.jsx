@@ -6,47 +6,91 @@ export default function Jobs() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
 
-  // Fetch job data (you can connect this to your backend later)
+  // Load real jobs (example dataset)
   useEffect(() => {
-    const dummyJobs = [
+    const jobData = [
       {
         id: 1,
-        title: 'Frontend Developer',
-        company: 'TechSpark',
-        location: 'Pune, India',
+        title: 'Frontend Developer Intern',
+        company: 'Google',
+        location: 'Bengaluru, India',
         category: 'Tech',
-        type: 'Full-time',
-        logo: 'https://cdn-icons-png.flaticon.com/512/1055/1055687.png',
+        type: 'Internship',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
+        applyLink: 'https://careers.google.com/jobs/results/',
       },
       {
         id: 2,
-        title: 'UI/UX Designer',
-        company: 'Designify',
-        location: 'Remote',
-        category: 'Design',
-        type: 'Internship',
-        logo: 'https://cdn-icons-png.flaticon.com/512/1055/1055666.png',
+        title: 'Software Engineer',
+        company: 'TCS',
+        location: 'Pune, India',
+        category: 'Tech',
+        type: 'Full-time',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/5/55/Tata_Consultancy_Services_Logo.svg',
+        applyLink: 'https://www.tcs.com/careers',
       },
       {
         id: 3,
-        title: 'Digital Marketing Intern',
-        company: 'GrowMate',
-        location: 'Mumbai, India',
-        category: 'Marketing',
-        type: 'Internship',
-        logo: 'https://cdn-icons-png.flaticon.com/512/1041/1041916.png',
+        title: 'UI/UX Designer',
+        company: 'Zoho',
+        location: 'Chennai, India',
+        category: 'Design',
+        type: 'Full-time',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/ZOHO_Corporation_Logo.svg',
+        applyLink: 'https://careers.zohocorp.com/',
       },
       {
         id: 4,
+        title: 'Digital Marketing Executive',
+        company: 'Byju’s',
+        location: 'Remote',
+        category: 'Marketing',
+        type: 'Full-time',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/2/27/BYJU%27S_logo.svg',
+        applyLink: 'https://byjus.com/careers/',
+      },
+      {
+        id: 5,
+        title: 'Graphic Designer Intern',
+        company: 'Canva',
+        location: 'Remote',
+        category: 'Design',
+        type: 'Internship',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Canva_Logo.svg',
+        applyLink: 'https://www.canva.com/careers/',
+      },
+      {
+        id: 6,
+        title: 'Data Analyst',
+        company: 'IBM',
+        location: 'Hyderabad, India',
+        category: 'Tech',
+        type: 'Full-time',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg',
+        applyLink: 'https://www.ibm.com/careers/in-en/',
+      },
+      {
+        id: 7,
+        title: 'HR Intern',
+        company: 'Wipro',
+        location: 'Mumbai, India',
+        category: 'Human Resources',
+        type: 'Internship',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Wipro_Primary_Logo_Color_RGB.svg',
+        applyLink: 'https://careers.wipro.com/',
+      },
+      {
+        id: 8,
         title: 'Backend Developer',
-        company: 'CodeHive',
+        company: 'Infosys',
         location: 'Bengaluru, India',
         category: 'Tech',
         type: 'Full-time',
-        logo: 'https://cdn-icons-png.flaticon.com/512/1055/1055672.png',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Infosys_logo.svg',
+        applyLink: 'https://career.infosys.com/',
       },
     ];
-    setJobs(dummyJobs);
+    setJobs(jobData);
   }, []);
 
   // Filter jobs
@@ -56,6 +100,11 @@ export default function Jobs() {
     return matchesSearch && matchesCategory;
   });
 
+  // Default logo fallback
+  const handleImageError = (e) => {
+    e.target.src = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; // fallback logo
+  };
+
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen py-16 px-6">
       {/* --- Header Section --- */}
@@ -64,12 +113,11 @@ export default function Jobs() {
           💼 Find Your Dream Job
         </h1>
         <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
-          Explore the latest opportunities for freshers in tech, design, and marketing.  
-          Search, filter, and apply for jobs — all in one place!
+          Explore the latest opportunities for freshers in tech, design, marketing, and more.
         </p>
       </div>
 
-      {/* --- Search & Filter Bar --- */}
+      {/* --- Search & Filter --- */}
       <div className="max-w-4xl mx-auto mb-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
         <input
           type="text"
@@ -87,6 +135,7 @@ export default function Jobs() {
           <option value="Tech">Tech</option>
           <option value="Design">Design</option>
           <option value="Marketing">Marketing</option>
+          <option value="Human Resources">Human Resources</option>
         </select>
       </div>
 
@@ -99,9 +148,16 @@ export default function Jobs() {
               className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow"
             >
               <div className="flex items-center gap-4 mb-4">
-                <img src={job.logo} alt={job.company} className="w-12 h-12 rounded-full" />
+                <img
+                  src={job.logo}
+                  alt={job.company}
+                  onError={handleImageError}
+                  className="w-12 h-12 rounded-full object-contain bg-white p-1"
+                />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{job.title}</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+                    {job.title}
+                  </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{job.company}</p>
                 </div>
               </div>
@@ -109,12 +165,14 @@ export default function Jobs() {
               <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-4">
                 {job.category} • {job.type}
               </p>
-              <Link
-                to={`/jobs/${job.id}`}
+              <a
+                href={job.applyLink}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-block mt-auto px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full font-semibold hover:scale-105 transition-transform"
               >
                 Apply Now
-              </Link>
+              </a>
             </div>
           ))
         ) : (
