@@ -12,44 +12,38 @@ import postRoutes from './src/routes/post.route.js';
 import commentRoutes from './src/routes/comment.route.js';
 import uploadRoutes from './src/routes/upload.route.js'; // Cloudinary upload route
 
-// ✅ Load environment variables
+// Load environment variables
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
 const app = express();
 
-// ✅ Middlewares
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
 // ✅ CORS Configuration
-const allowedOrigins = [
-  'http://localhost:5173', // Vite dev
-  'http://localhost:3000', // fallback local
-  'https://mern-blog-client-steel.vercel.app', // old Vercel domain
-  'https://blogwebsite.vercel.app', // ✅ your frontend domain (update if different)
-  'https://blog-website-u60z.onrender.com', // backend (Render)
-];
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? [
+        'https://blog-website-u60z.onrender.com', // your deployed frontend
+        'https://blog.100jsprojects.com',
+        'https://mern-blog-client-steel.vercel.app',
+        /\.vercel\.app$/,
+      ]
+    : ['http://localhost:5173', 'http://localhost:3000'];
 
-// ✅ Configure CORS
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.some((o) => origin.match(o))) {
-        callback(null, true);
-      } else {
-        console.warn(`❌ CORS blocked for origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
   })
 );
 
-// ✅ Connect MongoDB
+// MongoDB Connection
 let isConnected = false;
 const connectDB = async () => {
   if (isConnected) return;
@@ -67,10 +61,12 @@ const connectDB = async () => {
   }
 };
 
-// Connect immediately
-connectDB().catch((err) => console.error('MongoDB startup error:', err.message));
+// Optional: connect immediately on startup
+connectDB().catch((err) => {
+  console.error('MongoDB connection failed on startup:', err.message);
+});
 
-// Middleware to ensure DB is connected before routes
+// Middleware to ensure DB connection before routes
 const connectMiddleware = async (req, res, next) => {
   try {
     await connectDB();
@@ -80,7 +76,7 @@ const connectMiddleware = async (req, res, next) => {
   }
 };
 
-// ✅ Test routes
+// Test endpoints
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!', timestamp: new Date() });
 });
@@ -91,48 +87,47 @@ app.get('/api/debug', (req, res) => {
     nodeEnv: process.env.NODE_ENV,
     hasMongoEnv: !!process.env.MONGO,
     hasJwtSecret: !!process.env.JWT_SECRET,
+    hasCloudinary:
+      !!process.env.CLOUD_NAME &&
+      !!process.env.CLOUD_API_KEY &&
+      !!process.env.CLOUD_API_SECRET,
     timestamp: new Date(),
   });
 });
 
-// ✅ Main routes
+// Routes
 app.use('/api/user', connectMiddleware, userRoutes);
 app.use('/api/auth', connectMiddleware, authRoutes);
 app.use('/api/post', connectMiddleware, postRoutes);
 app.use('/api/comment', connectMiddleware, commentRoutes);
-app.use('/api/upload', uploadRoutes); // Cloudinary route
+app.use('/api/upload', uploadRoutes); // Cloudinary upload (no DB needed)
 
-// ✅ Serve Frontend (React build)
+// Serve frontend
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendPath = path.join(__dirname, '../client/dist');
-
 app.use(express.static(frontendPath));
 
-// Catch-all route for React
+// Serve React index.html for non-API routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// ✅ Global error handler
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
   const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-    statusCode,
-  });
+  const message = err.message || 'Internal Server Error';
+  res.status(statusCode).json({ success: false, message, statusCode });
 });
 
-// ✅ Start server
+// Start server
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.VERCEL) {
-  app.listen(PORT, () =>
-    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`)
-  );
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  });
 }
 
-// ✅ Export app (for Vercel/Render)
+// Export for serverless platforms (Vercel)
 export default app;

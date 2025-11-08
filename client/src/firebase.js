@@ -1,14 +1,10 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth";
-import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
+// ✅ Firebase configuration using Vite environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -19,24 +15,24 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Auth setup
+// ✅ Initialize Authentication
 const auth = getAuth(app);
-setPersistence(auth, browserLocalPersistence)
-  .then(() => console.log("Firebase Auth persistence: local"))
-  .catch((err) => console.error("Persistence error:", err));
-
 const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
 
-// Storage and Analytics
+// ✅ Initialize Storage (for image upload)
 const storage = getStorage(app);
+
+// ✅ Initialize Analytics (only if supported)
 let analytics;
 isSupported().then((supported) => {
-  if (supported) analytics = getAnalytics(app);
+  if (supported) {
+    analytics = getAnalytics(app);
+  }
 });
 
+// ✅ Export everything needed
 export { app, auth, provider, storage, analytics };
 export default app;
