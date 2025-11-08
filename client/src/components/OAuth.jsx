@@ -1,12 +1,6 @@
 import { Button, Spinner } from 'flowbite-react';
 import { AiFillGoogleCircle } from 'react-icons/ai';
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  getAuth,
-  getRedirectResult,
-} from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getAuth, getRedirectResult } from 'firebase/auth';
 import app from '../firebase';
 import { useDispatch } from 'react-redux';
 import { signInSuccess } from '../redux/user/userSlice';
@@ -19,11 +13,10 @@ export default function OAuth() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // ✅ Handle redirect results (for users who came back after redirect sign-in)
+  // ✅ Handle redirect result after coming back from Google
   useEffect(() => {
-    const handleRedirectSignIn = async () => {
-      try {
-        const result = await getRedirectResult(auth);
+    getRedirectResult(auth)
+      .then(async (result) => {
         if (result?.user) {
           const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/google`, {
             method: 'POST',
@@ -35,78 +28,27 @@ export default function OAuth() {
               googlePhotoUrl: result.user.photoURL,
             }),
           });
-
           const data = await res.json();
           if (res.ok) {
             dispatch(signInSuccess(data));
             navigate('/');
-          } else {
-            console.error('Server error after redirect:', data.message);
           }
         }
-      } catch (err) {
-        console.error('Redirect Sign-In Error:', err);
-      }
-    };
-
-    handleRedirectSignIn();
+      })
+      .catch((err) => console.error('Redirect Sign-In Error:', err));
   }, [auth, dispatch, navigate]);
 
-  // ✅ Handle Google popup or fallback to redirect
   const handleGoogleClick = async () => {
     if (loading) return;
     setLoading(true);
-
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-
     try {
-      // Try popup login first
-      // const resultsFromGoogle = await signInWithPopup(auth, provider);
-      let resultsFromGoogle;
-try {
-  resultsFromGoogle = await signInWithPopup(auth, provider);
-} catch (error) {
-  if (error.code === 'auth/popup-blocked') {
-    console.warn('Popup blocked — using redirect fallback');
-    await signInWithRedirect(auth, provider);
-    return;
-  }
-  throw error;
-}
-
-
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/google`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: resultsFromGoogle.user.displayName,
-          email: resultsFromGoogle.user.email,
-          googlePhotoUrl: resultsFromGoogle.user.photoURL,
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        dispatch(signInSuccess(data));
-        navigate('/');
-      } else {
-        console.error('Server returned error:', data.message);
-      }
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      // 👇 Redirect instead of popup
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      console.error('Google Sign-In Error:', error);
-
-      // 👇 If popup is blocked (common on mobile or in some browsers)
-      if (error.code === 'auth/popup-blocked') {
-        console.warn('Popup blocked — using redirect sign-in instead.');
-        await signInWithRedirect(auth, provider);
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        // User closed popup; no action needed
-      } else {
-        alert('Google Sign-In failed. Please enable popups for this site.');
-      }
-    } finally {
+      console.error('Google Redirect Sign-In Error:', error);
+      alert('Google Sign-In failed. Try again.');
       setLoading(false);
     }
   };
@@ -122,7 +64,7 @@ try {
       {loading ? (
         <>
           <Spinner size="sm" />
-          <span className="pl-2">Signing in...</span>
+          <span className="pl-2">Redirecting...</span>
         </>
       ) : (
         <>
