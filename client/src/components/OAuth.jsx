@@ -62,7 +62,19 @@ export default function OAuth() {
 
     try {
       // Try popup login first
-      const resultsFromGoogle = await signInWithPopup(auth, provider);
+      // const resultsFromGoogle = await signInWithPopup(auth, provider);
+      let resultsFromGoogle;
+try {
+  resultsFromGoogle = await signInWithPopup(auth, provider);
+} catch (error) {
+  if (error.code === 'auth/popup-blocked') {
+    console.warn('Popup blocked — using redirect fallback');
+    await signInWithRedirect(auth, provider);
+    return;
+  }
+  throw error;
+}
+
 
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/google`, {
         method: 'POST',
