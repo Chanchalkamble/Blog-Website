@@ -28,8 +28,9 @@ const allowedOrigins =
   process.env.NODE_ENV === 'production'
     ? [
         'https://blog-website-u60z.onrender.com', // your deployed frontend
-        'https://blog.100jsprojects.com',
-        'https://mern-blog-client-steel.vercel.app',
+        'http://localhost:5173', // local dev
+  'http://localhost:5000',
+       
         /\.vercel\.app$/,
       ]
     : ['http://localhost:5173', 'http://localhost:3000'];
