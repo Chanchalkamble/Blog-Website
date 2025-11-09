@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://blog-website-u60z.onrender.com/</loc>
+    <priority>1.00</priority>
+  </url>
+
+  <!-- Example Blog Posts -->
+  <url>
+    <loc>https://blog-website-u60z.onrender.com/blog/post-1</loc>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://blog-website-u60z.onrender.com/blog/post-2</loc>
+    <priority>0.80</priority>
+  </url>
+
+</urlset>
